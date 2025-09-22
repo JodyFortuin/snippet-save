@@ -114,7 +114,7 @@ export default function Paywall() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
       <LinearGradient
-        colors={['#6B8AFF', '#4169E1']}
+        colors={['#5B7CFF', '#3B5BDB']}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
         style={styles.gradientContainer}
