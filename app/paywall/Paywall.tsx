@@ -29,7 +29,7 @@ const SUBSCRIPTION_FEATURES = [
   },
   {
     id: 'favorites',
-    title: 'Favorites & Sync',
+    title: 'Favorites',
     description: 'Star important snippets for quick access',
     icon: Star,
   },
