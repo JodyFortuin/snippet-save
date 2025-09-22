@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Pressable, ActivityIndicator, Alert, ScrollView } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import Colors from '../../constants/Colors';
 import { useRouter } from 'expo-router';
 import { useApp } from '../../context/AppContext';
@@ -112,38 +113,45 @@ export default function Paywall() {
   };
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
-      <View style={[styles.header, { top: insets.top }]}>
-        <TouchableOpacity 
-          onPress={handleClose}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        >
-          <X size={24} color="#FFFFFF" />
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.content}>
-        <View style={styles.titleContainer}>
-          <View style={styles.crownContainer}>
-            <Crown size={24} color="#000000" />
-          </View>
-          <Text style={styles.title}>Unlock Premium</Text>
-          <Text style={styles.subtitle}>Supercharge your clipboard experience</Text>
+      <LinearGradient
+        colors={['#6B8AFF', '#4169E1']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={styles.gradientContainer}
+      >
+        <View style={[styles.header, { top: insets.top }]}>
+          <TouchableOpacity 
+            onPress={handleClose}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <X size={24} color="#FFFFFF" />
+          </TouchableOpacity>
         </View>
 
-        <View style={styles.features}>
-          {SUBSCRIPTION_FEATURES.map((feature) => (
-            <View key={feature.id} style={styles.featureRow}>
-              <View style={styles.featureIcon}>
-                <feature.icon size={20} color="#FFFFFF" />
-              </View>
-              <View style={styles.featureContent}>
-                <Text style={styles.featureTitle}>{feature.title}</Text>
-                <Text style={styles.featureDescription}>{feature.description}</Text>
-              </View>
+        <View style={styles.content}>
+          <View style={styles.titleContainer}>
+            <View style={styles.crownContainer}>
+              <Crown size={24} color="#000000" />
             </View>
-          ))}
+            <Text style={styles.title}>Unlock Premium</Text>
+            <Text style={styles.subtitle}>Supercharge your clipboard experience</Text>
+          </View>
+
+          <View style={styles.features}>
+            {SUBSCRIPTION_FEATURES.map((feature) => (
+              <View key={feature.id} style={styles.featureRow}>
+                <View style={styles.featureIcon}>
+                  <feature.icon size={20} color="#FFFFFF" />
+                </View>
+                <View style={styles.featureContent}>
+                  <Text style={styles.featureTitle}>{feature.title}</Text>
+                  <Text style={styles.featureDescription}>{feature.description}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
         </View>
-      </View>
+      </LinearGradient>
 
       <View style={styles.bottomSection}>
         {isLoading ? (
@@ -232,10 +240,13 @@ export default function Paywall() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#5B7EF5',
+    backgroundColor: '#FFFFFF',
   },
   scrollContent: {
     flexGrow: 1,
+  },
+  gradientContainer: {
+    paddingBottom: 40,
   },
   header: {
     position: 'absolute',
@@ -283,16 +294,18 @@ const styles = StyleSheet.create({
   featureRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     borderRadius: 20,
     padding: 20,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   featureIcon: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 20,
