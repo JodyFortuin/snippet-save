@@ -244,6 +244,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     zIndex: 1,
   },
+  content: {
     paddingTop: 120,
     paddingHorizontal: 20,
     paddingBottom: 20,
