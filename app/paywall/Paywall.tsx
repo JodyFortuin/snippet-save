@@ -5,7 +5,7 @@ import Colors from '../../constants/Colors';
 import { useRouter } from 'expo-router';
 import { useApp } from '../../context/AppContext';
 import { useSubscription } from '../../context/SubscriptionContext';
-import { Crown, Infinity, RefreshCw, FolderOpen, Shield, X } from 'lucide-react-native';
+import { Crown, Infinity, Search, FolderOpen, Star, X } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const SUBSCRIPTION_FEATURES = [
@@ -16,22 +16,22 @@ const SUBSCRIPTION_FEATURES = [
     icon: Infinity,
   },
   {
-    id: 'sync',
-    title: 'Cross-Device Sync',
-    description: 'Access clips on all your devices',
-    icon: RefreshCw,
+    id: 'search',
+    title: 'Fast Search',
+    description: 'Find your snippets instantly',
+    icon: Search,
   },
   {
-    id: 'collections',
-    title: 'Custom Collections',
-    description: 'Organize clips your way',
+    id: 'categories',
+    title: 'Smart Categories',
+    description: 'Organize snippets by category',
     icon: FolderOpen,
   },
   {
-    id: 'security',
-    title: 'Advanced Security',
-    description: 'Password protection & encryption',
-    icon: Shield,
+    id: 'favorites',
+    title: 'Favorites & Sync',
+    description: 'Star important snippets for quick access',
+    icon: Star,
   },
 ];
 
