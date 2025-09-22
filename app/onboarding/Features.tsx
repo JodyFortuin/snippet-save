@@ -3,12 +3,19 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Colors from '@/constants/Colors';
 import { useRouter } from 'expo-router';
 import { useApp } from '@/context/AppContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Features() {
   const router = useRouter();
-  const handleContinue = () => {
-    router.push('/paywall/Paywall');
+  const { setOnboardingComplete } = useApp();
+  
+  const handleContinue = async () => {
+    // Mark onboarding as complete before going to paywall
+    await AsyncStorage.setItem('onboarding_complete', 'true');
+    setOnboardingComplete(true);
+    router.replace('/paywall');
   };
+  
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Why SnippetSave?</Text>

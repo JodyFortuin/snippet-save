@@ -106,11 +106,15 @@ export default function Paywall() {
     }
   };
 
+  const handleClose = () => {
+    // When closing paywall, go to main app since onboarding is complete
+    router.replace('/(tabs)');
+  };
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
       <View style={[styles.header, { top: insets.top }]}>
         <TouchableOpacity 
-          onPress={() => router.back()}
+          onPress={handleClose}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
           <X size={24} color="#FFFFFF" />
