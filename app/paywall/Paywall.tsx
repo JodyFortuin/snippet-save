@@ -4,33 +4,33 @@ import Colors from '../../constants/Colors';
 import { useRouter } from 'expo-router';
 import { useApp } from '../../context/AppContext';
 import { useSubscription } from '../../context/SubscriptionContext';
-import { Crown, History, FolderTree, Star, Clock, X } from 'lucide-react-native';
+import { Crown, Infinity, RefreshCw, FolderOpen, Shield, X } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const SUBSCRIPTION_FEATURES = [
   {
     id: 'history',
     title: 'Unlimited History',
-    description: 'Never lose a snippet again',
-    icon: History,
-  },
-  {
-    id: 'categories',
-    title: 'Smart Categories',
-    description: 'Organize snippets by language & type',
-    icon: FolderTree,
-  },
-  {
-    id: 'favorites',
-    title: 'Favorites & Search',
-    description: 'Quick access to important snippets',
-    icon: Star,
+    description: 'Never lose a clip again',
+    icon: Infinity,
   },
   {
     id: 'sync',
-    title: 'Recent Activity',
-    description: 'Track your snippet usage history',
-    icon: Clock,
+    title: 'Cross-Device Sync',
+    description: 'Access clips on all your devices',
+    icon: RefreshCw,
+  },
+  {
+    id: 'collections',
+    title: 'Custom Collections',
+    description: 'Organize clips your way',
+    icon: FolderOpen,
+  },
+  {
+    id: 'security',
+    title: 'Advanced Security',
+    description: 'Password protection & encryption',
+    icon: Shield,
   },
 ];
 
@@ -40,11 +40,10 @@ type SubscriptionOption = {
   title: string;
   price: string;
   description: string;
-  subtext: string;
+  subtext?: string;
   perMonth?: string;
-  trial?: string;
   tag?: string;
-  feature?: string;
+  highlight?: boolean;
 };
 
 const SUBSCRIPTION_OPTIONS: SubscriptionOption[] = [
@@ -54,17 +53,16 @@ const SUBSCRIPTION_OPTIONS: SubscriptionOption[] = [
     title: 'Lifetime',
     price: '$29.99',
     description: 'One-time payment',
-    subtext: 'forever',
+    subtext: 'Never pay again',
     tag: 'BEST VALUE',
-    feature: 'Never pay again',
+    highlight: true,
   },
   {
     id: 'yearly',
     productId: 'snippet_pro_year1',
     title: 'Annual Plan',
     price: '$11.99',
-    description: 'per year',
-    subtext: 'Save 50%',
+    description: 'Save 50%',
     perMonth: '$1.00/month',
   },
   {
@@ -72,8 +70,7 @@ const SUBSCRIPTION_OPTIONS: SubscriptionOption[] = [
     productId: 'snippet_pro_week1',
     title: 'Monthly Plan',
     price: '$1.99',
-    description: 'per month',
-    subtext: 'Try it out',
+    description: 'Try it out',
   }
 ];
 
@@ -109,7 +106,6 @@ export default function Paywall() {
     }
   };
 
-
   return (
     <View style={styles.container}>
       <View style={[styles.header, { top: insets.top }]}>
@@ -124,7 +120,7 @@ export default function Paywall() {
       <View style={styles.content}>
         <View style={styles.titleContainer}>
           <View style={styles.crownContainer}>
-            <Crown size={24} color="#FFD700" />
+            <Crown size={24} color="#000000" />
           </View>
           <Text style={styles.title}>Unlock Premium</Text>
           <Text style={styles.subtitle}>Supercharge your clipboard experience</Text>
@@ -134,7 +130,7 @@ export default function Paywall() {
           {SUBSCRIPTION_FEATURES.map((feature) => (
             <View key={feature.id} style={styles.featureRow}>
               <View style={styles.featureIcon}>
-                <feature.icon size={20} color={Colors.primary} />
+                <feature.icon size={20} color="#FFFFFF" />
               </View>
               <View style={styles.featureContent}>
                 <Text style={styles.featureTitle}>{feature.title}</Text>
@@ -143,7 +139,9 @@ export default function Paywall() {
             </View>
           ))}
         </View>
+      </View>
 
+      <View style={styles.bottomSection}>
         {isLoading ? (
           <ActivityIndicator size="large" color={Colors.primary} />
         ) : (
@@ -154,7 +152,8 @@ export default function Paywall() {
                   key={plan.id}
                   style={[
                     styles.planContainer,
-                    selectedPlan === plan.id && styles.selectedPlan
+                    selectedPlan === plan.id && styles.selectedPlan,
+                    plan.highlight && styles.highlightedPlan
                   ]}
                   onPress={() => setSelectedPlan(plan.id)}
                 >
@@ -165,20 +164,31 @@ export default function Paywall() {
                   )}
                   <View style={styles.planContent}>
                     <View style={styles.planHeader}>
-                      <Text style={styles.planTitle}>{plan.title}</Text>
-                      <Text style={styles.planPrice}>{plan.price}</Text>
+                      <View>
+                        <Text style={styles.planTitle}>{plan.title}</Text>
+                        <Text style={styles.planDescription}>{plan.description}</Text>
+                      </View>
+                      <View style={styles.priceContainer}>
+                        <Text style={styles.planPrice}>{plan.price}</Text>
+                        {plan.id === 'lifetime' && (
+                          <Text style={styles.foreverText}>forever</Text>
+                        )}
+                        {plan.id === 'yearly' && (
+                          <Text style={styles.perText}>per year</Text>
+                        )}
+                        {plan.id === 'monthly' && (
+                          <Text style={styles.perText}>per month</Text>
+                        )}
+                      </View>
                     </View>
-                    <Text style={styles.planDescription}>{plan.description}</Text>
-                    {plan.subtext && (
-                      <Text style={styles.planSubtext}>{plan.subtext}</Text>
+                    {plan.subtext && plan.id === 'lifetime' && (
+                      <View style={styles.subtextContainer}>
+                        <Infinity size={16} color="#4169E1" />
+                        <Text style={styles.planSubtext}>{plan.subtext}</Text>
+                      </View>
                     )}
                     {plan.perMonth && (
                       <Text style={styles.perMonthText}>{plan.perMonth}</Text>
-                    )}
-                    {plan.trial && (
-                      <View style={styles.trialTag}>
-                        <Text style={styles.trialText}>{plan.trial}</Text>
-                      </View>
                     )}
                   </View>
                 </Pressable>
@@ -190,24 +200,20 @@ export default function Paywall() {
               onPress={handleSubscribe}
               disabled={isLoading}
             >
-              <Text style={styles.subscribeText}>
-                {selectedPlan === 'weekly' && !isInTrial ? 'Start Free Trial' : 'Continue'}
-              </Text>
+              <Text style={styles.subscribeText}>Start Free Trial</Text>
             </TouchableOpacity>
 
             <Text style={styles.terms}>
-              {selectedPlan === 'weekly' ? '3 days free, then ' : ''}{SUBSCRIPTION_OPTIONS.find(p => p.id === selectedPlan)?.price} {selectedPlan === 'weekly' ? 'per week' : 'per year'}
+              7 days free, then $29.99 one-time
             </Text>
 
             <View style={styles.footer}>
               <TouchableOpacity>
                 <Text style={styles.footerLink}>Terms of Service</Text>
               </TouchableOpacity>
-              <Text style={styles.footerDot}>•</Text>
               <TouchableOpacity>
                 <Text style={styles.footerLink}>Privacy Policy</Text>
               </TouchableOpacity>
-              <Text style={styles.footerDot}>•</Text>
               <TouchableOpacity>
                 <Text style={styles.footerLink}>Restore</Text>
               </TouchableOpacity>
@@ -235,46 +241,40 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 32,
-    marginHorizontal: 16,
-    marginTop: 48,
-    marginBottom: 0,
-    paddingTop: 32,
+    paddingTop: 60,
     paddingHorizontal: 20,
-    paddingBottom: 16,
   },
   titleContainer: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 40,
   },
   crownContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     backgroundColor: '#FFD700',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 20,
+    marginBottom: 24,
   },
   title: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#000000',
+    color: '#FFFFFF',
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#666666',
+    color: 'rgba(255, 255, 255, 0.8)',
     textAlign: 'center',
   },
   features: {
-    marginBottom: 40,
+    marginBottom: 20,
   },
   featureRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(65, 105, 225, 0.08)',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     borderRadius: 16,
     padding: 16,
     marginBottom: 12,
@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 16,
@@ -294,13 +294,21 @@ const styles = StyleSheet.create({
   featureTitle: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#000000',
+    color: '#FFFFFF',
     marginBottom: 4,
   },
   featureDescription: {
     fontSize: 15,
-    color: '#666666',
+    color: 'rgba(255, 255, 255, 0.8)',
     lineHeight: 20,
+  },
+  bottomSection: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    paddingTop: 32,
+    paddingHorizontal: 20,
+    paddingBottom: 16,
   },
   plans: {
     marginBottom: 24,
@@ -314,6 +322,10 @@ const styles = StyleSheet.create({
     borderColor: '#E9ECEF',
   },
   selectedPlan: {
+    borderColor: '#4169E1',
+    borderWidth: 2,
+  },
+  highlightedPlan: {
     borderColor: '#4169E1',
     borderWidth: 2,
   },
@@ -338,45 +350,56 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 4,
+    marginBottom: 8,
   },
   planTitle: {
     fontSize: 20,
     fontWeight: '600',
     color: '#000000',
+    marginBottom: 4,
+  },
+  planDescription: {
+    fontSize: 15,
+    color: '#666666',
+  },
+  priceContainer: {
+    alignItems: 'flex-end',
   },
   planPrice: {
     fontSize: 28,
     fontWeight: '700',
     color: '#000000',
   },
-  planDescription: {
+  foreverText: {
     fontSize: 15,
     color: '#666666',
-    marginTop: 4,
+    marginTop: 2,
+  },
+  perText: {
+    fontSize: 15,
+    color: '#666666',
+    marginTop: 2,
+  },
+  subtextContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(65, 105, 225, 0.08)',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 100,
+    alignSelf: 'flex-start',
+    marginTop: 12,
   },
   planSubtext: {
     fontSize: 15,
     color: '#4169E1',
-    marginTop: 8,
+    marginLeft: 6,
+    fontWeight: '500',
   },
   perMonthText: {
     fontSize: 13,
     color: '#666666',
     marginTop: 4,
-  },
-  trialTag: {
-    backgroundColor: 'rgba(65, 105, 225, 0.08)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 100,
-    alignSelf: 'flex-start',
-    marginTop: 12,
-  },
-  trialText: {
-    color: '#4169E1',
-    fontSize: 13,
-    fontWeight: '600',
   },
   subscribeButton: {
     backgroundColor: '#4169E1',
@@ -399,16 +422,12 @@ const styles = StyleSheet.create({
   },
   footer: {
     flexDirection: 'row',
-    justifyContent: 'center',
+    justifyContent: 'space-around',
     alignItems: 'center',
-    gap: 32,
   },
   footerLink: {
     color: '#666666',
     fontSize: 13,
     textDecorationLine: 'underline',
   },
-  footerDot: {
-    display: 'none',
-  },
-}); 
+});
