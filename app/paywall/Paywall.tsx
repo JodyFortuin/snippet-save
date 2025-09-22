@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Pressable, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Pressable, ActivityIndicator, Alert, ScrollView } from 'react-native';
 import Colors from '../../constants/Colors';
 import { useRouter } from 'expo-router';
 import { useApp } from '../../context/AppContext';
@@ -107,7 +107,7 @@ export default function Paywall() {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
       <View style={[styles.header, { top: insets.top }]}>
         <TouchableOpacity 
           onPress={() => router.back()}
@@ -221,7 +221,7 @@ export default function Paywall() {
           </>
         )}
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -229,6 +229,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#5B7EF5',
+  },
+  scrollContent: {
+    flexGrow: 1,
   },
   header: {
     position: 'absolute',
@@ -241,7 +244,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     zIndex: 1,
   },
-  content: {
     paddingTop: 120,
     paddingHorizontal: 20,
     paddingBottom: 20,
@@ -311,7 +313,6 @@ const styles = StyleSheet.create({
     paddingTop: 40,
     paddingHorizontal: 20,
     paddingBottom: 40,
-    minHeight: '50%',
   },
   plans: {
     marginBottom: 24,
