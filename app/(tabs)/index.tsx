@@ -6,18 +6,25 @@ import Header from '@/components/Header';
 import SnippetCard from '@/components/SnippetCard';
 import CategoryPill from '@/components/CategoryPill';
 import { useApp } from '@/context/AppContext';
+import { useSubscription } from '@/context/SubscriptionContext';
 import Categories from '@/constants/Categories';
 import Colors from '@/constants/Colors';
 
 export default function HomeScreen() {
   const { getFavorites, getRecentCopied, snippets } = useApp();
+  const { isInTrial } = useSubscription();
   
   const favorites = getFavorites();
   const recentlyUsed = getRecentCopied();
 
   return (
     <View style={styles.container}>
-      <Header title="SnipSave" showAdd />
+      <Header 
+        title="SnipSave" 
+        showAdd
+        showCrown={!isInTrial}
+        onCrownPress={() => router.push('/paywall')}
+      />
       
       <ScrollView
         style={styles.scrollView}

@@ -6,13 +6,17 @@ import {
   Mail, 
   Share2, 
   ChevronRight, 
-  Shield 
+  Shield,
+  Crown
 } from 'lucide-react-native';
 import Header from '@/components/Header';
 import Colors from '@/constants/Colors';
+import { useSubscription } from '@/context/SubscriptionContext';
+import { router } from 'expo-router';
 
 export default function SettingsScreen() {
   const [darkModeEnabled, setDarkModeEnabled] = React.useState(false);
+  const { isInTrial } = useSubscription();
 
   const handleExport = () => {
     Alert.alert('Coming Soon', 'Export functionality will be available in the next update.');
@@ -69,6 +73,27 @@ export default function SettingsScreen() {
         </View>
         */}
         
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Subscription</Text>
+          
+          <Pressable style={styles.settingItem} onPress={() => router.push('/paywall')}>
+            <View style={styles.settingItemLeft}>
+              <View style={[styles.iconContainer, { backgroundColor: Colors.primary + '20' }]}>
+                <Crown size={20} color={Colors.primary} />
+              </View>
+              <View>
+                <Text style={styles.settingLabel}>
+                  {isInTrial ? 'Trial Active' : 'Upgrade to Pro'}
+                </Text>
+                <Text style={styles.settingDescription}>
+                  {isInTrial ? 'Enjoy unlimited access' : 'Remove limits & unlock all features'}
+                </Text>
+              </View>
+            </View>
+            <ChevronRight size={18} color={Colors.textTertiary} />
+          </Pressable>
+        </View>
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>About</Text>
           
@@ -170,6 +195,11 @@ const styles = StyleSheet.create({
   settingLabel: {
     fontSize: 16,
     color: Colors.text,
+  },
+  settingDescription: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    marginTop: 2,
   },
   versionContainer: {
     marginTop: 24,

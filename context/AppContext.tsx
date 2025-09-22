@@ -22,6 +22,10 @@ interface AppContextType {
   addCategory: (category: Omit<Category, 'id' | 'icon'>) => void;
   updateCategory: (id: string, updates: Partial<Omit<Category, 'id' | 'icon'>>) => void;
   deleteCategory: (id: string) => void;
+  onboardingComplete: boolean;
+  setOnboardingComplete: (value: boolean) => void;
+  isSubscribed: boolean;
+  setIsSubscribed: (value: boolean) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -30,6 +34,8 @@ const STORAGE_KEYS = {
   SNIPPETS: 'snippets',
   RECENT_ACTIVITY: 'recentActivity',
   CATEGORIES: 'categories',
+  ONBOARDING: 'onboardingComplete',
+  SUBSCRIBED: 'isSubscribed',
 };
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -37,26 +43,34 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [onboardingComplete, setOnboardingCompleteState] = useState(false);
+  const [isSubscribed, setIsSubscribedState] = useState(false);
 
   // Load data from AsyncStorage on mount
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [storedSnippets, storedActivity, storedCategories] = await Promise.all([
+        const [storedSnippets, storedActivity, storedCategories, storedOnboarding, storedSubscribed] = await Promise.all([
           AsyncStorage.getItem(STORAGE_KEYS.SNIPPETS),
           AsyncStorage.getItem(STORAGE_KEYS.RECENT_ACTIVITY),
           AsyncStorage.getItem(STORAGE_KEYS.CATEGORIES),
+          AsyncStorage.getItem(STORAGE_KEYS.ONBOARDING),
+          AsyncStorage.getItem(STORAGE_KEYS.SUBSCRIBED),
         ]);
 
         setSnippets(storedSnippets ? JSON.parse(storedSnippets) : mockSnippets);
         setRecentActivity(storedActivity ? JSON.parse(storedActivity) : mockRecentActivity);
         setCategories(storedCategories ? JSON.parse(storedCategories) : defaultCategories);
+        setOnboardingComplete(storedOnboarding === 'true');
+        setIsSubscribed(storedSubscribed === 'true');
       } catch (error) {
         console.error('Error loading data from AsyncStorage:', error);
         // Fall back to mock data if loading fails
         setSnippets(mockSnippets);
         setRecentActivity(mockRecentActivity);
         setCategories(defaultCategories);
+        setOnboardingComplete(false);
+        setIsSubscribed(false);
       } finally {
         setIsLoading(false);
       }
@@ -222,6 +236,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCategories(categories.filter((category) => category.id !== id));
   };
 
+  const setOnboardingComplete = (value: boolean) => {
+    setOnboardingCompleteState(value);
+    AsyncStorage.setItem(STORAGE_KEYS.ONBOARDING, value ? 'true' : 'false');
+  };
+
+  const setIsSubscribed = (value: boolean) => {
+    setIsSubscribedState(value);
+    AsyncStorage.setItem(STORAGE_KEYS.SUBSCRIBED, value ? 'true' : 'false');
+  };
+
   if (isLoading) {
     return null;
   }
@@ -245,6 +269,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addCategory,
         updateCategory,
         deleteCategory,
+        onboardingComplete,
+        setOnboardingComplete,
+        isSubscribed,
+        setIsSubscribed,
       }}
     >
       {children}
