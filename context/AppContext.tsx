@@ -194,9 +194,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return snippets.filter((snippet) => snippet.isFavorite);
   };
 
-  const searchSnippets = (query: string) => {
-    const lowerQuery = query.toLowerCase();
-    const searchSnippets = (query: string, categoryId?: string | null, sortBy: 'relevance' | 'date' | 'usage' = 'relevance') => {
+  const searchSnippets = (query: string, categoryId?: string | null, sortBy: 'relevance' | 'date' | 'usage' = 'relevance') => {
     const lowerQuery = query.toLowerCase();
     
     // Filter snippets
