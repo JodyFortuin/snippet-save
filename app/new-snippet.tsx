@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TextInput, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, View, Text, TextInput, ScrollView, TouchableOpacity, Alert, Switch } from 'react-native';
 import { router } from 'expo-router';
+import { Bold, Italic, Underline, Code, Link, List, Type } from 'lucide-react-native';
 import Header from '@/components/Header';
 import CategoryPill from '@/components/CategoryPill';
 import { useApp } from '@/context/AppContext';
@@ -14,6 +15,43 @@ export default function NewSnippetScreen() {
   const [content, setContent] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState(Categories[0].id);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [isRichText, setIsRichText] = useState(false);
+  const [selectionStart, setSelectionStart] = useState(0);
+  const [selectionEnd, setSelectionEnd] = useState(0);
+  
+  const applyFormatting = (format: string) => {
+    if (!isRichText) return;
+    
+    const selectedText = content.substring(selectionStart, selectionEnd);
+    if (!selectedText) return;
+    
+    let formattedText = '';
+    switch (format) {
+      case 'bold':
+        formattedText = `**${selectedText}**`;
+        break;
+      case 'italic':
+        formattedText = `*${selectedText}*`;
+        break;
+      case 'underline':
+        formattedText = `__${selectedText}__`;
+        break;
+      case 'code':
+        formattedText = `\`${selectedText}\``;
+        break;
+      case 'link':
+        formattedText = `[${selectedText}](url)`;
+        break;
+      case 'list':
+        formattedText = `• ${selectedText}`;
+        break;
+      default:
+        return;
+    }
+    
+    const newContent = content.substring(0, selectionStart) + formattedText + content.substring(selectionEnd);
+    setContent(newContent);
+  };
   
   const handleCreate = () => {
     if (!title.trim()) {
@@ -73,15 +111,64 @@ export default function NewSnippetScreen() {
           
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Content</Text>
+            
+            {/* Rich Text Toggle */}
+            <View style={styles.richTextToggle}>
+              <Text style={styles.richTextLabel}>Rich Text</Text>
+              <Switch
+                value={isRichText}
+                onValueChange={setIsRichText}
+                trackColor={{ false: Colors.borderLight, true: Colors.primary + '80' }}
+                thumbColor={isRichText ? Colors.primary : Colors.textTertiary}
+              />
+            </View>
+            
+            {/* Formatting Toolbar */}
+            {isRichText && (
+              <View style={styles.formattingToolbar}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  <TouchableOpacity style={styles.formatButton} onPress={() => applyFormatting('bold')}>
+                    <Bold size={16} color={Colors.textSecondary} />
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.formatButton} onPress={() => applyFormatting('italic')}>
+                    <Italic size={16} color={Colors.textSecondary} />
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.formatButton} onPress={() => applyFormatting('underline')}>
+                    <Underline size={16} color={Colors.textSecondary} />
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.formatButton} onPress={() => applyFormatting('code')}>
+                    <Code size={16} color={Colors.textSecondary} />
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.formatButton} onPress={() => applyFormatting('link')}>
+                    <Link size={16} color={Colors.textSecondary} />
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.formatButton} onPress={() => applyFormatting('list')}>
+                    <List size={16} color={Colors.textSecondary} />
+                  </TouchableOpacity>
+                </ScrollView>
+              </View>
+            )}
+            
             <TextInput
               style={styles.contentInput}
-              placeholder="Enter your text"
+              placeholder={isRichText ? "Enter your text (supports **bold**, *italic*, __underline__, `code`, [links](url), • lists)" : "Enter your text"}
               value={content}
               onChangeText={setContent}
+              onSelectionChange={(event) => {
+                setSelectionStart(event.nativeEvent.selection.start);
+                setSelectionEnd(event.nativeEvent.selection.end);
+              }}
               multiline
               numberOfLines={10}
               textAlignVertical="top"
             />
+            
+            {/* Rich Text Help */}
+            {isRichText && (
+              <Text style={styles.helpText}>
+                Select text and use toolbar, or type: **bold**, *italic*, __underline__, `code`, [link](url), • list
+              </Text>
+            )}
           </View>
           
           <View style={styles.inputGroup}>
@@ -180,6 +267,36 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 16,
     color: Colors.text,
+  },
+  richTextToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  richTextLabel: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    fontWeight: '500',
+  },
+  formattingToolbar: {
+    flexDirection: 'row',
+    backgroundColor: Colors.background,
+    borderRadius: 8,
+    padding: 8,
+    marginBottom: 8,
+  },
+  formatButton: {
+    padding: 8,
+    marginRight: 4,
+    borderRadius: 6,
+    backgroundColor: Colors.card,
+  },
+  helpText: {
+    fontSize: 12,
+    color: Colors.textTertiary,
+    marginTop: 4,
+    fontStyle: 'italic',
   },
   categoriesContainer: {
     marginBottom: 8,

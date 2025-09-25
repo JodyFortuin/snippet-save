@@ -39,8 +39,17 @@ const SnippetCard: React.FC<SnippetCardProps> = ({ snippet, showPreview = true }
   };
 
   const truncateContent = (content: string, maxLength = 100) => {
-    if (content.length <= maxLength) return content;
-    return content.substring(0, maxLength) + '...';
+    // Remove markdown formatting for preview
+    let cleanContent = content
+      .replace(/\*\*(.*?)\*\*/g, '$1') // Bold
+      .replace(/\*(.*?)\*/g, '$1')     // Italic
+      .replace(/__(.*?)__/g, '$1')     // Underline
+      .replace(/`(.*?)`/g, '$1')       // Code
+      .replace(/\[(.*?)\]\((.*?)\)/g, '$1') // Links
+      .replace(/^• /gm, '');           // List bullets
+    
+    if (cleanContent.length <= maxLength) return cleanContent;
+    return cleanContent.substring(0, maxLength) + '...';
   };
 
   return (
