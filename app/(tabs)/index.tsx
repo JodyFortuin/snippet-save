@@ -20,7 +20,7 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <Header 
-        title="SnipSave" 
+        title="SnippetSave" 
         showAdd
         showCrown={!isInTrial}
         onCrownPress={() => router.push('/paywall')}
