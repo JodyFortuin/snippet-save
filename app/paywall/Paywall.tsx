@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Pressable, ActivityIndicator, Alert, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Pressable, ActivityIndicator, Alert, ScrollView, Linking } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Colors from '../../constants/Colors';
 import { useRouter } from 'expo-router';
@@ -7,6 +7,7 @@ import { useApp } from '../../context/AppContext';
 import { useSubscription } from '../../context/SubscriptionContext';
 import { Crown, Infinity, Search, FolderOpen, Star, X } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Purchases from 'react-native-purchases';
 
 const SUBSCRIPTION_FEATURES = [
   {
@@ -49,30 +50,26 @@ type SubscriptionOption = {
 
 const SUBSCRIPTION_OPTIONS: SubscriptionOption[] = [
   {
+    id: 'weekly',
+    title: 'Weekly Plan',
+    price: '$1.99',
+    description: 'Try it out',
+  },
+  {
+    id: 'yearly',
+    title: 'Annual Plan',
+    price: '$11.99',
+    description: '',
+    perMonth: '$1.00/month',
+  },
+  {
     id: 'lifetime',
-    productId: 'snippet_pro_lifetime1',
     title: 'Lifetime',
     price: '$29.99',
     description: 'One-time payment',
     subtext: 'Never pay again',
-    tag: 'BEST VALUE',
     highlight: true,
   },
-  {
-    id: 'yearly',
-    productId: 'snippet_pro_year1',
-    title: 'Annual Plan',
-    price: '$11.99',
-    description: 'Save 50%',
-    perMonth: '$1.00/month',
-  },
-  {
-    id: 'monthly',
-    productId: 'snippet_pro_week1',
-    title: 'Monthly Plan',
-    price: '$1.99',
-    description: 'Try it out',
-  }
 ];
 
 export default function Paywall() {
@@ -82,18 +79,54 @@ export default function Paywall() {
   const [selectedPlan, setSelectedPlan] = useState('lifetime');
   const insets = useSafeAreaInsets();
 
+  useEffect(() => {
+    const fetchProductDetails = async () => {
+      try {
+        const offerings = await Purchases.getOfferings();
+        if (offerings.current) {
+          const weekly = offerings.current.availablePackages.find(pkg => pkg.identifier === 'weekly');
+          const yearly = offerings.current.availablePackages.find(pkg => pkg.identifier === 'yearly');
+          const lifetime = offerings.current.availablePackages.find(pkg => pkg.identifier === 'lifetime');
+
+          setSubscriptionOptions([
+            {
+              id: 'weekly',
+              title: 'Weekly Plan',
+              price: weekly?.product.priceString || '$1.99',
+              description: 'Try it out',
+            },
+            {
+              id: 'yearly',
+              title: 'Annual Plan',
+              price: yearly?.product.priceString || '$11.99',
+              description: '',
+              perMonth: '$1.00/month',
+            },
+            {
+              id: 'lifetime',
+              title: 'Lifetime',
+              price: lifetime?.product.priceString || '$29.99',
+              description: 'One-time payment',
+              subtext: 'Never pay again',
+              highlight: true,
+            },
+          ]);
+        }
+      } catch (error) {
+        console.error('Failed to fetch product details:', error);
+      }
+    };
+
+    fetchProductDetails();
+  }, []);
+
+  const [subscriptionOptions, setSubscriptionOptions] = useState(SUBSCRIPTION_OPTIONS);
+
   const handleSubscribe = async () => {
-    const option = SUBSCRIPTION_OPTIONS.find(opt => opt.id === selectedPlan);
+    const option = subscriptionOptions.find(opt => opt.id === selectedPlan);
     if (!option) return;
 
     try {
-      if (selectedPlan === 'weekly' && !isInTrial) {
-        await startTrial();
-        setIsSubscribed(true);
-        router.replace('/(tabs)');
-        return;
-      }
-
       const success = await purchasePackage(option.productId);
       if (success) {
         setIsSubscribed(true);
@@ -110,6 +143,23 @@ export default function Paywall() {
   const handleClose = () => {
     // When closing paywall, go to main app since onboarding is complete
     router.replace('/(tabs)');
+  };
+
+  const handleTermsOfService = () => {
+    Linking.openURL('https://holoscale.digital/terms');
+  };
+
+  const handlePrivacyPolicy = () => {
+    Linking.openURL('https://holoscale.digital');
+  };
+
+  const handleRestorePurchases = async () => {
+    try {
+      // TODO: Implement actual restore logic with RevenueCat or App Store
+      Alert.alert('Restore Successful', 'Your purchases have been restored.');
+    } catch (error) {
+      Alert.alert('Restore Failed', 'There was an error restoring your purchases. Please try again later.');
+    }
   };
 
   return (
@@ -159,12 +209,8 @@ export default function Paywall() {
           <ActivityIndicator size="large" color={Colors.primary} />
         ) : (
           <>
-            <View style={styles.bestValueBadge}>
-              <Text style={styles.bestValueText}>BEST VALUE</Text>
-            </View>
-
             <View style={styles.plans}>
-              {SUBSCRIPTION_OPTIONS.map((plan) => (
+              {subscriptionOptions.map((plan) => (
                 <Pressable
                   key={plan.id}
                   style={[
@@ -188,8 +234,8 @@ export default function Paywall() {
                         {plan.id === 'yearly' && (
                           <Text style={styles.perText}>per year</Text>
                         )}
-                        {plan.id === 'monthly' && (
-                          <Text style={styles.perText}>per month</Text>
+                        {plan.id === 'weekly' && (
+                          <Text style={styles.perText}>per week</Text>
                         )}
                       </View>
                     </View>
@@ -214,21 +260,21 @@ export default function Paywall() {
               onPress={handleSubscribe}
               disabled={isLoading}
             >
-              <Text style={styles.subscribeText}>Start Free Trial</Text>
+              <Text style={styles.subscribeText}>Continue</Text>
             </TouchableOpacity>
 
             <Text style={styles.terms}>
-              7 days free, then $29.99 one-time
+              {subscriptionOptions.find(p => p.id === selectedPlan)?.price} {selectedPlan === 'monthly' ? 'per month' : selectedPlan === 'yearly' ? 'per year' : 'one-time'}
             </Text>
 
             <View style={styles.footer}>
-              <TouchableOpacity>
+              <TouchableOpacity onPress={handleTermsOfService}>
                 <Text style={styles.footerLink}>Terms of Service</Text>
               </TouchableOpacity>
-              <TouchableOpacity>
+              <TouchableOpacity onPress={handlePrivacyPolicy}>
                 <Text style={styles.footerLink}>Privacy Policy</Text>
               </TouchableOpacity>
-              <TouchableOpacity>
+              <TouchableOpacity onPress={handleRestorePurchases}>
                 <Text style={styles.footerLink}>Restore</Text>
               </TouchableOpacity>
             </View>
@@ -334,19 +380,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingBottom: 40,
     marginTop: -20,
-  },
-  bestValueBadge: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  bestValueText: {
-    backgroundColor: '#dbeafe',
-    color: '#1e40af',
-    fontSize: 12,
-    fontWeight: '600',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 100,
   },
   plans: {
     marginBottom: 32,
