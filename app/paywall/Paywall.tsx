@@ -7,7 +7,6 @@ import { useApp } from '../../context/AppContext';
 import { useSubscription } from '../../context/SubscriptionContext';
 import { Crown, Infinity, Search, FolderOpen, Star, X } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Purchases from 'react-native-purchases';
 
 const SUBSCRIPTION_FEATURES = [
   {
@@ -80,44 +79,7 @@ export default function Paywall() {
   const insets = useSafeAreaInsets();
 
   useEffect(() => {
-    const fetchProductDetails = async () => {
-      try {
-        const offerings = await Purchases.getOfferings();
-        if (offerings.current) {
-          const weekly = offerings.current.availablePackages.find(pkg => pkg.identifier === 'snippet_pro_week1');
-          const yearly = offerings.current.availablePackages.find(pkg => pkg.identifier === 'snippet_pro_year1');
-          const lifetime = offerings.current.availablePackages.find(pkg => pkg.identifier === 'snippet_pro_lifetime1');
-
-          setSubscriptionOptions([
-            {
-              id: 'weekly',
-              title: 'Weekly Plan',
-              price: weekly?.product.priceString || '$1.99',
-              description: 'Try it out',
-            },
-            {
-              id: 'yearly',
-              title: 'Annual Plan',
-              price: yearly?.product.priceString || '$11.99',
-              description: '',
-              perMonth: '$1.00/month',
-            },
-            {
-              id: 'lifetime',
-              title: 'Lifetime',
-              price: lifetime?.product.priceString || '$29.99',
-              description: 'One-time payment',
-              subtext: 'Never pay again',
-              highlight: true,
-            },
-          ]);
-        }
-      } catch (error) {
-        console.error('Failed to fetch product details:', error);
-      }
-    };
-
-    fetchProductDetails();
+    // Product details are already set in SUBSCRIPTION_OPTIONS
   }, []);
 
   const [subscriptionOptions, setSubscriptionOptions] = useState(SUBSCRIPTION_OPTIONS);
