@@ -17,7 +17,7 @@ interface AppContextType {
   getSnippetById: (id: string) => Snippet | undefined;
   getSnippetsByCategory: (categoryId: string) => Snippet[];
   getFavorites: () => Snippet[];
-  searchSnippets: (query: string) => Snippet[];
+  searchSnippets: (query: string, categoryId?: string | null, sortBy?: 'relevance' | 'date' | 'usage') => Snippet[];
   getRecentCopied: (limit?: number) => Snippet[];
   addCategory: (category: Omit<Category, 'id' | 'icon'>) => void;
   updateCategory: (id: string, updates: Partial<Omit<Category, 'id' | 'icon'>>) => void;
@@ -196,11 +196,63 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const searchSnippets = (query: string) => {
     const lowerQuery = query.toLowerCase();
-    return snippets.filter(
-      (snippet) =>
-        snippet.title.toLowerCase().includes(lowerQuery) ||
-        snippet.content.toLowerCase().includes(lowerQuery)
-    );
+    const searchSnippets = (query: string, categoryId?: string | null, sortBy: 'relevance' | 'date' | 'usage' = 'relevance') => {
+    const lowerQuery = query.toLowerCase();
+    
+    // Filter snippets
+    let results = snippets.filter((snippet) => {
+      const titleMatch = snippet.title.toLowerCase().includes(lowerQuery);
+      const contentMatch = snippet.content.toLowerCase().includes(lowerQuery);
+      const categoryMatch = categoryId ? snippet.categoryId === categoryId : true;
+      
+      return (titleMatch || contentMatch) && categoryMatch;
+    });
+    
+    // Sort results
+    if (sortBy === 'relevance') {
+      results = results.sort((a, b) => {
+        // Calculate relevance score
+        const scoreA = calculateRelevanceScore(a, lowerQuery);
+        const scoreB = calculateRelevanceScore(b, lowerQuery);
+        return scoreB - scoreA;
+      });
+    } else if (sortBy === 'date') {
+      results = results.sort((a, b) => new Date(b.dateModified).getTime() - new Date(a.dateModified).getTime());
+    } else if (sortBy === 'usage') {
+      results = results.sort((a, b) => b.usageCount - a.usageCount);
+    }
+    
+    return results;
+  };
+  
+  const calculateRelevanceScore = (snippet: Snippet, query: string): number => {
+    let score = 0;
+    const title = snippet.title.toLowerCase();
+    const content = snippet.content.toLowerCase();
+    
+    // Title matches are more important
+    if (title.includes(query)) {
+      score += 10;
+      // Boost if title starts with query
+      if (title.startsWith(query)) {
+        score += 5;
+      }
+    }
+    
+    // Content matches
+    if (content.includes(query)) {
+      score += 5;
+    }
+    
+    // Boost for favorites
+    if (snippet.isFavorite) {
+      score += 3;
+    }
+    
+    // Boost for frequently used snippets
+    score += Math.min(snippet.usageCount * 0.5, 5);
+    
+    return score;
   };
 
   const getRecentCopied = (limit = 5) => {
