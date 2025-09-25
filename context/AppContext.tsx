@@ -4,6 +4,7 @@ import { Snippet, RecentActivity, Category } from '@/types';
 import mockSnippets from '@/data/snippets';
 import mockRecentActivity from '@/data/recentActivity';
 import defaultCategories from '@/constants/Categories';
+import { Alert } from 'react-native';
 
 interface AppContextType {
   snippets: Snippet[];
@@ -101,6 +102,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [categories, isLoading]);
 
   const addSnippet = (newSnippet: Omit<Snippet, 'id' | 'dateCreated' | 'dateModified' | 'usageCount' | 'lastUsed'>) => {
+    if (!isSubscribed && snippets.length >= 2) {
+      Alert.alert('Limit Reached', 'Free users can only save up to 2 snippets.');
+      return;
+    }
     const timestamp = new Date().toISOString();
     const snippet: Snippet = {
       ...newSnippet,
