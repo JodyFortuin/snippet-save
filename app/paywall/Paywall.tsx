@@ -84,9 +84,9 @@ export default function Paywall() {
       try {
         const offerings = await Purchases.getOfferings();
         if (offerings.current) {
-          const weekly = offerings.current.availablePackages.find(pkg => pkg.identifier === 'weekly');
-          const yearly = offerings.current.availablePackages.find(pkg => pkg.identifier === 'yearly');
-          const lifetime = offerings.current.availablePackages.find(pkg => pkg.identifier === 'lifetime');
+          const weekly = offerings.current.availablePackages.find(pkg => pkg.identifier === 'snippet_pro_week1');
+          const yearly = offerings.current.availablePackages.find(pkg => pkg.identifier === 'snippet_pro_year1');
+          const lifetime = offerings.current.availablePackages.find(pkg => pkg.identifier === 'snippet_pro_lifetime1');
 
           setSubscriptionOptions([
             {
